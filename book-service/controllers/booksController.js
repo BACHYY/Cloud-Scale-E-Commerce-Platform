@@ -195,9 +195,6 @@ exports.getBookByISBN = (req, res) => {
   });
 };
 
-// -------------------- Related Books --------------------
-const recommenderBreaker = require("../utils/recommenderBreaker");
-
 // GET /books/:ISBN/related-books
 exports.getRelatedBooks = async (req, res) => {
   const { ISBN } = req.params;
