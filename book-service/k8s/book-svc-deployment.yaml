@@ -1,0 +1,43 @@
+###############################################################################
+# BOOK  S E R V I C E    (replicas = 1 because of circuit‑breaker state)
+###############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-svc
+  namespace: bookstore-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: book-svc }
+  template:
+    metadata:
+      labels:
+        app: book-svc
+    spec:
+      containers:
+        - name: book
+          image: «ECR_URI»/book-svc:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: «AURORA_WRITER_ENDPOINT»
+            - name: DB_USER
+              valueFrom:
+                { secretKeyRef: { name: db-credentials, key: username } }
+            - name: DB_PASS
+              valueFrom:
+                { secretKeyRef: { name: db-credentials, key: password } }
+            - name: RECOMMENDER_BASE_URL
+              value: «RECOMMENDER_URL»
+          volumeMounts:
+            - name: cb-state
+              mountPath: /var/circuit
+          livenessProbe:
+            httpGet: { path: /status, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: cb-state
+          emptyDir: {}

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mobile-bff
+  namespace: bookstore-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mobile-bff
+  template:
+    metadata:
+      labels:
+        app: mobile-bff
+    spec:
+      containers:
+        - name: mobile-bff
+          image: <ECR_URI>/mobile-bff:latest
+          ports:
+            - containerPort: 80 # Express will listen on 80
+          env:
+            - name: BOOK_SERVICE_URL # ← new
+              value: http://book-svc
+            - name: CUSTOMER_SERVICE_URL # ← new
+              value: http://customer-svc
+          livenessProbe:
+            httpGet: { path: /status, port: 80 }
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -1,0 +1,14 @@
+{
+  "name": "bookstore-web-bff",
+  "version": "1.0.0",
+  "description": "BFF for bookstore web app that validates headers, JWT tokens, and proxies requests to backend services",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

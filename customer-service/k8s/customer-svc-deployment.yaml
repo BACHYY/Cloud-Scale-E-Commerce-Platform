@@ -1,0 +1,35 @@
+###############################################################################
+# CUSTOMER  S E R V I C E
+###############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-svc
+  namespace: bookstore-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: customer-svc }
+  template:
+    metadata:
+      labels:
+        app: customer-svc
+    spec:
+      containers:
+        - name: customer
+          image: «ECR_URI»/customer-svc:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: «AURORA_WRITER_ENDPOINT»
+            - name: DB_USER
+              valueFrom:
+                { secretKeyRef: { name: db-credentials, key: username } }
+            - name: DB_PASS
+              valueFrom:
+                { secretKeyRef: { name: db-credentials, key: password } }
+          livenessProbe:
+            httpGet: { path: /status, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
