@@ -1,4 +1,6 @@
 const db = require("../db");
+// -------------------- Related Books --------------------
+const recommenderBreaker = require("../utils/recommenderBreaker");
 // add book
 exports.addBook = (req, res) => {
   const { ISBN, title, Author, description, genre, price, quantity } = req.body;
@@ -191,4 +193,20 @@ exports.getBookByISBN = (req, res) => {
       quantity: book.quantity,
     });
   });
+};
+
+// -------------------- Related Books --------------------
+const recommenderBreaker = require("../utils/recommenderBreaker");
+
+// GET /books/:ISBN/related-books
+exports.getRelatedBooks = async (req, res) => {
+  const { ISBN } = req.params;
+
+  try {
+    const { related } = await recommenderBreaker.fire(ISBN);
+    res.status(200).json({ ISBN, related });
+  } catch (err) {
+    console.error("Recommender call failed:", err.message || err);
+    res.status(502).json({ message: "Recommender service unavailable" });
+  }
 };

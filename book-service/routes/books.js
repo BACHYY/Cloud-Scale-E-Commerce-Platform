@@ -14,4 +14,7 @@ router.get("/:ISBN", booksController.getBookByISBN);
 // New GET route for /isbn/:ISBN
 router.get("/isbn/:ISBN", booksController.getBookByISBN);
 
+// Related‑books endpoint
+router.get("/:ISBN/related-books", booksController.getRelatedBooks);
+
 module.exports = router;
