@@ -14,6 +14,7 @@ spec:
       containers:
         - name: web-bff
           image: docker.io/bachyy/web-bff:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:

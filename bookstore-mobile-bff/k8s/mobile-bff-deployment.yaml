@@ -16,6 +16,7 @@ spec:
       containers:
         - name: mobile-bff
           image: docker.io/bachyy/mobile-bff:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 80 # Express will listen on 80
           env:
