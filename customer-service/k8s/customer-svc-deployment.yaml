@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: customer
-          image: «ECR_URI»/customer-svc:latest
+          image: docker.io/bachyy/customer-svc:v1
           ports:
             - containerPort: 3000
           env:

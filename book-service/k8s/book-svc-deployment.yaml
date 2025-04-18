@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: book
-          image: «ECR_URI»/book-svc:latest
+          image: docker.io/bachyy/book-svc:v1
           ports:
             - containerPort: 3000
           env:

@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: web-bff
-          image: «ECR_URI»/web-bff:latest
+          image: docker.io/bachyy/web-bff:v1
           ports:
             - containerPort: 80
           env:
