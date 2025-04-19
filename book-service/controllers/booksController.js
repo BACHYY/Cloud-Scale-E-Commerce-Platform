@@ -1,9 +1,8 @@
 const db = require("../db");
-// ────────────────────────────────────────────────────────────
-//  Circuit‑breaker helper (1 declaration only)
-// ────────────────────────────────────────────────────────────
+
 const recommenderBreaker = require("../utils/recommenderBreaker");
 const { CircuitBreakerOpenError } = require("opossum");
+const producer = require("../utils/kafkaProducer");
 
 // add book
 exports.addBook = (req, res) => {
@@ -41,7 +40,7 @@ exports.addBook = (req, res) => {
     "INSERT INTO books (ISBN, title, author, description, genre, price, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)";
   const values = [ISBN, title, Author, description, genre, price, quantity];
 
-  db.query(sql, values, (err, result) => {
+  db.query(sql, values, async (err, result) => {
     if (err) {
       if (err.code === "ER_DUP_ENTRY") {
         return res
@@ -51,6 +50,20 @@ exports.addBook = (req, res) => {
       console.error("Error inserting book:", err);
       return res.status(500).json({ message: "Database error" });
     }
+    await producer
+      .send({
+        topic: "books.topic.events",
+        messages: [
+          {
+            value: JSON.stringify({
+              event: "BookCreated",
+              ISBN,
+              ts: Date.now(),
+            }),
+          },
+        ],
+      })
+      .catch((e) => console.error("Kafka send error", e));
 
     // Construct the BASEURL dynamically
     const BASEURL = `${req.protocol}://${req.get("host")}`;
@@ -143,7 +156,7 @@ exports.updateBook = (req, res) => {
     // do a SELECT to ensure we return what’s in the DB.
 
     const fetchSql = `SELECT * FROM books WHERE ISBN = ?`;
-    db.query(fetchSql, [ISBN], (err, rows) => {
+    db.query(fetchSql, [ISBN], async (err, rows) => {
       if (err) {
         console.error("Error fetching updated book:", err);
         return res.status(500).json({ message: "Database error" });
@@ -154,6 +167,20 @@ exports.updateBook = (req, res) => {
       }
 
       const updatedBook = rows[0];
+      await producer
+        .send({
+          topic: "books.topic.events",
+          messages: [
+            {
+              value: JSON.stringify({
+                event: "BookUpdated",
+                ISBN,
+                ts: Date.now(),
+              }),
+            },
+          ],
+        })
+        .catch((e) => console.error("Kafka send error", e));
       // Respond using the assignment’s field names exactly:
       res.status(200).json({
         ISBN: updatedBook.ISBN,
