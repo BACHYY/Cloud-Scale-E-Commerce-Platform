@@ -22,16 +22,8 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: KAFKA_BROKERS
-              value: "b-1.mymsk:9092,b-2.mymsk:9092,b-3.mymsk:9092"
-            - name: KAFKA_USERNAME
-              valueFrom:
-                { secretKeyRef: { name: msk-credentials, key: username } }
-            - name: KAFKA_PASSWORD
-              valueFrom:
-                { secretKeyRef: { name: msk-credentials, key: password } }
             - name: DB_HOST
-              value: bookstore-db-dev.cluster-c3ooo02mmam7.us-east-1.rds.amazonaws.com
+              value: bookstore-db-dev.cluster-cbd2qfc15yog.us-east-1.rds.amazonaws.com
             - name: DB_USER
               valueFrom:
                 { secretKeyRef: { name: db-credentials, key: username } }
@@ -41,7 +33,7 @@ spec:
             - name: DB_NAME
               value: booksdb
             - name: RECOMMENDER_BASE_URL
-              value: http://recommender-svc
+              value: "http://18.118.230.221"
           volumeMounts:
             - name: cb-state
               mountPath: /var/circuit

@@ -1,5 +1,6 @@
 // controllers/customersController.js
 const db = require("../db");
+const producer = require("../utils/kafkaProducer");
 
 // Add customers
 exports.addCustomer = (req, res) => {
@@ -55,11 +56,18 @@ exports.addCustomer = (req, res) => {
       zipcode,
     ];
 
-    db.query(insertSql, values, (insertErr, insertResult) => {
+    db.query(insertSql, values, async (insertErr, insertResult) => {
       if (insertErr) {
         console.error("Error inserting customer:", insertErr);
         return res.status(500).json({ message: "Database error" });
       }
+      // 6) Publish CustomerRegistered event to Kafka
+      await producer
+        .send({
+          topic: "ahmedc.customer.evt",
+          messages: [{ value: JSON.stringify(responseBody) }],
+        })
+        .catch((e) => console.error("Kafka send error", e));
 
       // 6) Construct the BASEURL dynamically
       const BASEURL = `${req.protocol}://${req.get("host")}`;

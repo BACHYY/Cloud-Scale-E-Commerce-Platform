@@ -22,8 +22,10 @@ spec:
           ports:
             - containerPort: 3000
           env:
+            - name: KAFKA_BROKERS
+              value: "3.129.102.184:9092,18.118.230.221:9093,3.130.6.49:9094"
             - name: DB_HOST
-              value: bookstore-db-dev.cluster-c3ooo02mmam7.us-east-1.rds.amazonaws.com
+              value: bookstore-db-dev.cluster-cbd2qfc15yog.us-east-1.rds.amazonaws.com
             - name: DB_USER
               valueFrom:
                 { secretKeyRef: { name: db-credentials, key: username } }

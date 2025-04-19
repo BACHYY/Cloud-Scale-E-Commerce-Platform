@@ -2,7 +2,6 @@ const db = require("../db");
 
 const recommenderBreaker = require("../utils/recommenderBreaker");
 const { CircuitBreakerOpenError } = require("opossum");
-const producer = require("../utils/kafkaProducer");
 
 // add book
 exports.addBook = (req, res) => {
@@ -50,20 +49,6 @@ exports.addBook = (req, res) => {
       console.error("Error inserting book:", err);
       return res.status(500).json({ message: "Database error" });
     }
-    await producer
-      .send({
-        topic: "books.topic.events",
-        messages: [
-          {
-            value: JSON.stringify({
-              event: "BookCreated",
-              ISBN,
-              ts: Date.now(),
-            }),
-          },
-        ],
-      })
-      .catch((e) => console.error("Kafka send error", e));
 
     // Construct the BASEURL dynamically
     const BASEURL = `${req.protocol}://${req.get("host")}`;
@@ -167,20 +152,7 @@ exports.updateBook = (req, res) => {
       }
 
       const updatedBook = rows[0];
-      await producer
-        .send({
-          topic: "books.topic.events",
-          messages: [
-            {
-              value: JSON.stringify({
-                event: "BookUpdated",
-                ISBN,
-                ts: Date.now(),
-              }),
-            },
-          ],
-        })
-        .catch((e) => console.error("Kafka send error", e));
+
       // Respond using the assignment’s field names exactly:
       res.status(200).json({
         ISBN: updatedBook.ISBN,

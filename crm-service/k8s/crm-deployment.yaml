@@ -12,19 +12,17 @@ spec:
       containers:
         - name: crm
           image: docker.io/bachyy/crm-svc:v1
+          imagePullPolicy: Always
           env:
             - name: KAFKA_BROKERS
-              value: "b-1.mymsk:9092,b-2.mymsk:9092,b-3.mymsk:9092"
-            - name: KAFKA_USERNAME
+              value: "3.129.102.184:9092,18.118.230.221:9093,3.130.6.49:9094"
+            - name: SMTP_HOST
+              valueFrom: { secretKeyRef: { name: smtp-credentials, key: host } }
+            - name: SMTP_PORT
+              valueFrom: { secretKeyRef: { name: smtp-credentials, key: port } }
+            - name: SMTP_USER
               valueFrom:
-                { secretKeyRef: { name: msk-credentials, key: username } }
-            - name: KAFKA_PASSWORD
+                { secretKeyRef: { name: smtp-credentials, key: username } }
+            - name: SMTP_PASS
               valueFrom:
-                { secretKeyRef: { name: msk-credentials, key: password } }
-            - name: AWS_REGION
-              value: "us-east-1"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                { secretKeyRef: { name: ses-credentials, key: accessKeyId } }
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom: { name: ses-credentials, key: secretAccessKey }
+                { secretKeyRef: { name: smtp-credentials, key: password } }
