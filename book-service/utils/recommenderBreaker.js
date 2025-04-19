@@ -2,24 +2,27 @@
 const axios = require("axios");
 const CircuitBreaker = require("opossum");
 
-const RECOMMENDER_BASE_URL =
-  process.env.RECOMMENDER_BASE_URL || "http://recommender-svc";
+const RECOMMENDER_BASE_URL = process.env.RECOMMENDER_BASE_URL; // e.g. http://18.118.230.221
 
+// ────────────────────────────────────────────────────────────
+// Production endpoint:  GET /recommendations/{ISBN}
+// Returns: { related: [ { ISBN, title, Author }, … ] }
+// ────────────────────────────────────────────────────────────
 async function fetchRelated(isbn) {
-  const url = `${RECOMMENDER_BASE_URL}/api/v1/related?isbn=${isbn}`;
+  const url = `${RECOMMENDER_BASE_URL}/recommendations/${isbn}`;
   const { data } = await axios.get(url, { timeout: 3000 });
-  return data; // expect: { related: [ "978123...", ... ] }
+  return data; // { related: [...] }
 }
 
 const breakerOptions = {
-  timeout: 3000, // give the remote 3 s before failing
-  errorThresholdPercentage: 1,
-  resetTimeout: 60000, // try again after 15 s
+  timeout: 3000, // fail if no response in 3 s
+  errorThresholdPercentage: 1, // open after first failure
+  resetTimeout: 60000, // half‑open after 60 s
 };
 
 const breaker = new CircuitBreaker(fetchRelated, breakerOptions);
 
-// graceful fallback when breaker is OPEN
+// When breaker is OPEN, fall back to empty list
 breaker.fallback(() => ({ related: [] }));
 
 module.exports = breaker;
