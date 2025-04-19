@@ -34,7 +34,9 @@ app.use(["/books", "/customers"], async (req, res) => {
   // Use req.baseUrl (mount path) and req.path (without query string)
   const targetBase =
     req.baseUrl === "/books" ? BOOK_SERVICE_URL : CUSTOMER_SERVICE_URL;
-  const targetUrl = `${targetBase}${ensureLeadingSlash(req.path)}`;
+  const targetUrl = `${targetBase}${req.baseUrl}${ensureLeadingSlash(
+    req.path
+  )}`;
   console.log(`Proxying request to: ${targetUrl}`);
 
   try {
