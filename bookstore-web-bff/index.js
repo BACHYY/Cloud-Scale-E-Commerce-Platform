@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Health check endpoint (no authentication required)
 app.get("/status", (req, res) => {
-  res.status(200).json({ status: "Mobile BFF Service is running" });
+  res.status(200).json({ status: "WEB BFF Service is running" });
 });
 
 // Apply authentication middleware to all endpoints except /status
@@ -53,32 +53,6 @@ app.use(["/books", "/customers"], async (req, res) => {
 
     const response = await axios(axiosConfig);
     let responseData = response.data;
-
-    // Mobile-specific transformations for GET requests
-    if (req.method === "GET") {
-      if (req.baseUrl === "/books") {
-        // Replace "non-fiction" with 3 for the genre field
-        if (
-          responseData &&
-          typeof responseData === "object" &&
-          responseData.genre === "non-fiction"
-        ) {
-          responseData.genre = 3;
-        }
-      } else if (req.baseUrl === "/customers") {
-        // Remove specific fields from customer response
-        if (responseData && typeof responseData === "object") {
-          const fieldsToRemove = [
-            "address",
-            "address2",
-            "city",
-            "state",
-            "zipcode",
-          ];
-          fieldsToRemove.forEach((field) => delete responseData[field]);
-        }
-      }
-    }
 
     res.status(response.status).json(responseData);
   } catch (error) {
