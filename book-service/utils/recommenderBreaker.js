@@ -12,9 +12,9 @@ async function fetchRelated(isbn) {
 }
 
 const breakerOptions = {
-  timeout: 5000, // give the remote 5 s before failing
-  errorThresholdPercentage: 50,
-  resetTimeout: 15000, // try again after 15 s
+  timeout: 3000, // give the remote 3 s before failing
+  errorThresholdPercentage: 1,
+  resetTimeout: 60000, // try again after 15 s
 };
 
 const breaker = new CircuitBreaker(fetchRelated, breakerOptions);

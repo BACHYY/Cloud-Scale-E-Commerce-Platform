@@ -1,6 +1,10 @@
 const db = require("../db");
-// -------------------- Related Books --------------------
+// ────────────────────────────────────────────────────────────
+//  Circuit‑breaker helper (1 declaration only)
+// ────────────────────────────────────────────────────────────
 const recommenderBreaker = require("../utils/recommenderBreaker");
+const { CircuitBreakerOpenError } = require("opossum");
+
 // add book
 exports.addBook = (req, res) => {
   const { ISBN, title, Author, description, genre, price, quantity } = req.body;
@@ -196,14 +200,36 @@ exports.getBookByISBN = (req, res) => {
 };
 
 // GET /books/:ISBN/related-books
+// ────────────────────────────────────────────────────────────
+//  GET /books/:ISBN/related-books
+//  • 3 s timeout
+//  • 504 on first timeout
+//  • Circuit opens immediately; 503 while open (60 s)
+//  • Success → 200 array; Empty → 204
+// ────────────────────────────────────────────────────────────
 exports.getRelatedBooks = async (req, res) => {
   const { ISBN } = req.params;
 
   try {
-    const { related } = await recommenderBreaker.fire(ISBN);
-    res.status(200).json({ ISBN, related });
+    const result = await recommenderBreaker.fire(ISBN);
+    const related = Array.isArray(result) ? result : result.related || [];
+
+    if (related.length === 0) {
+      return res.status(204).send();
+    }
+    return res.status(200).json(related);
   } catch (err) {
-    console.error("Recommender call failed:", err.message || err);
-    res.status(502).json({ message: "Recommender service unavailable" });
+    if (err.code === "ECONNABORTED") {
+      return res
+        .status(504)
+        .json({ message: "Recommendation service timeout" });
+    }
+    if (err instanceof CircuitBreakerOpenError) {
+      return res
+        .status(503)
+        .json({ message: "Recommendation service unavailable" });
+    }
+    console.error("Recommender call failed:", err);
+    return res.status(502).json({ message: "Upstream error" });
   }
 };
