@@ -1,0 +1,12 @@
+{
+  "name": "crm-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "kafkajs": "^2.6.3",
+    "aws-sdk": "^2.1520.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

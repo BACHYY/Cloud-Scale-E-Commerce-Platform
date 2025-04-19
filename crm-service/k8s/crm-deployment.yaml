@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-svc
+  namespace: bookstore-ns
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: crm-svc } }
+  template:
+    metadata: { labels: { app: crm-svc } }
+    spec:
+      containers:
+        - name: crm
+          image: docker.io/bachyy/crm-svc:v1
+          env:
+            - name: KAFKA_BROKERS
+              value: "b-1.mymsk:9092,b-2.mymsk:9092,b-3.mymsk:9092"
+            - name: KAFKA_USERNAME
+              valueFrom:
+                { secretKeyRef: { name: msk-credentials, key: username } }
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                { secretKeyRef: { name: msk-credentials, key: password } }
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                { secretKeyRef: { name: ses-credentials, key: accessKeyId } }
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom: { name: ses-credentials, key: secretAccessKey }
