@@ -209,33 +209,27 @@ exports.getBookByISBN = (req, res) => {
 // GET /books/:ISBN/related-books  (Circuit‑breaker protected)
 exports.getRelatedBooks = async (req, res) => {
   const { ISBN } = req.params;
-
   try {
-    // recommenderBreaker.fire() is expected to resolve to
-    //   { related: [ { ISBN, title, Author }, … ] }
-    const { related } = await recommenderBreaker.fire(ISBN);
+    const result = await recommenderBreaker.fire(ISBN);
 
-    // Empty list ⇒ 204 No Content
-    if (!related || related.length === 0) {
+    // result can be either an array OR { related: array }
+    const related = Array.isArray(result) ? result : result.related || [];
+
+    if (related.length === 0) {
       return res.status(204).send();
     }
-
-    // Success ⇒ 200 with the required wrapper
     return res.status(200).json({ ISBN, related });
   } catch (err) {
-    // Call timed‑out while breaker still closed ⇒ 504
     if (err.code === "ECONNABORTED") {
       return res
         .status(504)
         .json({ message: "Recommendation service timeout" });
     }
-    // Breaker already OPEN ⇒ 503
     if (err instanceof CircuitBreakerOpenError) {
       return res
         .status(503)
         .json({ message: "Recommendation service unavailable" });
     }
-    // Any other error from upstream
     console.error("Recommender call failed:", err);
     return res.status(502).json({ message: "Upstream error" });
   }

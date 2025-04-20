@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: book
-          image: docker.io/bachyy/book-svc:v1
+          image: docker.io/bachyy/book-svc:v2
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
