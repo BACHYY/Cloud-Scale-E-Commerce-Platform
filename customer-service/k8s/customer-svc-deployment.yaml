@@ -22,6 +22,8 @@ spec:
           ports:
             - containerPort: 3000
           env:
+            - name: ANDREW_ID
+              value: "ahmedc"
             - name: KAFKA_BROKERS
               value: "3.129.102.184:9092,18.118.230.221:9093,3.130.6.49:9094"
             - name: DB_HOST
